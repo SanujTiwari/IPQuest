@@ -1,8 +1,48 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "IP Quest";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero">
+    <div class="hero-content">
+        <p class="tagline">LEARN • PLAY • DISCOVER</p>
+
+        <h1>IP QUEST</h1>
+
+        <p class="hero-description">
+            Become an Intellectual Property Detective.
+            Learn how ideas, inventions, brands, and creative works are protected.
+        </p>
+
+        <a asp-controller="Home" asp-action="Topics" class="start-button">
+            START YOUR QUEST
+        </a>
+    </div>
 </div>
+
+<section class="features">
+
+    <div class="feature-card">
+        <div class="feature-icon">©</div>
+        <h3>Copyright</h3>
+        <p>Discover how creative works are protected.</p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">™</div>
+        <h3>Trademark</h3>
+        <p>Learn how brands and logos are protected.</p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">⚙</div>
+        <h3>Patent</h3>
+        <p>Explore how inventions can be protected.</p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Trade Secret</h3>
+        <p>Understand the value of confidential information.</p>
+    </div>
+
+</section>
