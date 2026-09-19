@@ -1,38 +1,49 @@
-﻿@{
+﻿@model List<IPQuest.Models.Topic>
+
+@{
     ViewData["Title"] = "IP Topics";
 }
 
 <div class="topics-page">
 
-    <h1>Choose Your Topic</h1>
+    <div class="topics-header">
+        <span class="topics-label">YOUR QUEST BEGINS</span>
 
-    <p>Start your IP learning adventure.</p>
+        <h1>Explore Intellectual Property</h1>
 
-    <div class="topic-grid">
+        <p>
+            Choose a topic and discover how ideas, inventions, brands,
+            and creative work are protected.
+        </p>
+    </div>
 
-        <div class="topic-card">
-            <h2>© Copyright</h2>
-            <p>Learn about protection of creative works.</p>
-            <button>START</button>
-        </div>
+    <div class="topics-grid">
 
-        <div class="topic-card">
-            <h2>™ Trademark</h2>
-            <p>Learn about brands, names, and logos.</p>
-            <button>START</button>
-        </div>
+        @foreach (var topic in Model)
+        {
+            <div class="topic-card">
 
-        <div class="topic-card">
-            <h2>⚙ Patent</h2>
-            <p>Learn how inventions can be protected.</p>
-            <button>START</button>
-        </div>
+                <div class="topic-icon">
+                    @topic.Icon
+                </div>
 
-        <div class="topic-card">
-            <h2>🔐 Trade Secret</h2>
-            <p>Learn about confidential business information.</p>
-            <button>START</button>
-        </div>
+                <div class="topic-content">
+                    <h2>@topic.Title</h2>
+
+                    <p>
+                        @topic.Description
+                    </p>
+
+                    <a asp-controller="Home"
+                       asp-action="Topic"
+                       asp-route-id="@topic.Id"
+                       class="topic-button">
+                        START
+                    </a>
+                </div>
+
+            </div>
+        }
 
     </div>
 

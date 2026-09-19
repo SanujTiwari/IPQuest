@@ -1,19 +1,38 @@
+using IPQuest.Data;
 using Microsoft.AspNetCore.Mvc;
 
-public class HomeController : Controller
+namespace IPQuest.Controllers
 {
-    public IActionResult Index()
+    public class HomeController : Controller
     {
-        return View();
-    }
+        private readonly ApplicationDbContext _context;
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public HomeController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-    public IActionResult Topics()
-    {
-        return View();
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult Topics()
+        {
+            var topics = _context.Topics.ToList();
+
+            return View(topics);
+        }
+        public IActionResult Topic(int id)
+        {
+            var topic = _context.Topics.FirstOrDefault(t => t.Id == id);
+
+            if (topic == null)
+            {
+                return NotFound();
+            }
+
+            return View(topic);
+        }
     }
 }

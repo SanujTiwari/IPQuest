@@ -1,0 +1,31 @@
+﻿@model IPQuest.Models.Topic
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="topic-detail-page">
+
+    <div class="topic-detail-card">
+
+        <div class="topic-detail-icon">
+            @Model.Icon
+        </div>
+
+        <span class="topic-detail-label">IP QUEST</span>
+
+        <h1>@Model.Title</h1>
+
+        <p>
+            @Model.Description
+        </p>
+
+        <a asp-controller="Home"
+           asp-action="Topics"
+           class="topic-button">
+            BACK TO TOPICS
+        </a>
+
+    </div>
+
+</div>
