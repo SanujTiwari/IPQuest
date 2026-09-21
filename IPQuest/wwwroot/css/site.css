@@ -208,3 +208,32 @@ body {
     display: inline-block;
     text-decoration: none;
 }
+.quiz-progress {
+    max-width: 800px;
+    margin: 0 auto 25px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: #6366f1;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}

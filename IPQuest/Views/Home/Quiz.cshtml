@@ -15,6 +15,19 @@
         <p>Choose the correct answer to continue your quest.</p>
     </div>
 
+    <div class="quiz-progress">
+
+        <div class="progress-info">
+            <span id="progress-text">Question 1 of @Model.Count</span>
+            <span id="progress-percent">0%</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+    </div>
+
     <div class="quiz-container">
 
         @for (int i = 0; i < Model.Count; i++)
@@ -61,10 +74,34 @@
 
     const questions = document.querySelectorAll(".quiz-question");
 
-    questions.forEach((question, index) => {
+    const progressText = document.getElementById("progress-text");
+    const progressPercent = document.getElementById("progress-percent");
+    const progressFill = document.getElementById("progress-fill");
 
-        const options = question.querySelectorAll(".answer-option");
-        const nextButton = question.querySelector(".next-button");
+    function updateProgress() {
+
+        const progress =
+            ((currentQuestion + 1) / questions.length) * 100;
+
+        progressText.textContent =
+            `Question ${currentQuestion + 1} of ${questions.length}`;
+
+        progressPercent.textContent =
+            `${Math.round(progress)}%`;
+
+        progressFill.style.width =
+            `${progress}%`;
+    }
+
+    updateProgress();
+
+    questions.forEach((question) => {
+
+        const options =
+            question.querySelectorAll(".answer-option");
+
+        const nextButton =
+            question.querySelector(".next-button");
 
         options.forEach(option => {
 
@@ -75,15 +112,21 @@
                 });
 
                 if (this.dataset.correct === "true") {
+
                     this.style.borderColor = "#22c55e";
+
                     score++;
+
                 } else {
+
                     this.style.borderColor = "#ef4444";
 
                     options.forEach(btn => {
+
                         if (btn.dataset.correct === "true") {
                             btn.style.borderColor = "#22c55e";
                         }
+
                     });
                 }
 
@@ -99,9 +142,15 @@
             currentQuestion++;
 
             if (currentQuestion < questions.length) {
+
                 questions[currentQuestion].style.display = "block";
+
+                updateProgress();
+
             } else {
+
                 showResult();
+
             }
 
         });
@@ -110,10 +159,12 @@
 
     function showResult() {
 
-        const quizContainer = document.querySelector(".quiz-container");
+        const quizContainer =
+            document.querySelector(".quiz-container");
 
         quizContainer.innerHTML = `
             <div class="question-card result-card">
+
                 <h2>Quiz Complete!</h2>
 
                 <p>Your Score</p>
@@ -125,6 +176,7 @@
                 <a href="/Home/Topics" class="next-button">
                     BACK TO TOPICS
                 </a>
+
             </div>
         `;
     }
