@@ -55,6 +55,8 @@
 
                 </div>
 
+                <div class="answer-feedback"></div>
+
                 <button type="button"
                         class="next-button"
                         style="display: none;">
@@ -74,9 +76,14 @@
 
     const questions = document.querySelectorAll(".quiz-question");
 
-    const progressText = document.getElementById("progress-text");
-    const progressPercent = document.getElementById("progress-percent");
-    const progressFill = document.getElementById("progress-fill");
+    const progressText =
+        document.getElementById("progress-text");
+
+    const progressPercent =
+        document.getElementById("progress-percent");
+
+    const progressFill =
+        document.getElementById("progress-fill");
 
     function updateProgress() {
 
@@ -103,6 +110,9 @@
         const nextButton =
             question.querySelector(".next-button");
 
+        const feedback =
+            question.querySelector(".answer-feedback");
+
         options.forEach(option => {
 
             option.addEventListener("click", function () {
@@ -111,15 +121,30 @@
                     btn.disabled = true;
                 });
 
-                if (this.dataset.correct === "true") {
+                const isCorrect =
+                    this.dataset.correct === "true";
+
+                if (isCorrect) {
 
                     this.style.borderColor = "#22c55e";
 
                     score++;
 
+                    feedback.textContent =
+                        "Correct! +1 point";
+
+                    feedback.style.color =
+                        "#22c55e";
+
                 } else {
 
                     this.style.borderColor = "#ef4444";
+
+                    feedback.style.color =
+                        "#ef4444";
+
+                    feedback.textContent =
+                        "Not quite! The correct answer is shown in green.";
 
                     options.forEach(btn => {
 
