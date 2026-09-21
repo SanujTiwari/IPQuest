@@ -140,11 +140,11 @@
 
                     this.style.borderColor = "#ef4444";
 
-                    feedback.style.color =
-                        "#ef4444";
-
                     feedback.textContent =
                         "Not quite! The correct answer is shown in green.";
+
+                    feedback.style.color =
+                        "#ef4444";
 
                     options.forEach(btn => {
 
@@ -187,20 +187,62 @@
         const quizContainer =
             document.querySelector(".quiz-container");
 
+        let resultTitle = "";
+        let resultMessage = "";
+
+        if (score === questions.length) {
+
+            resultTitle = "Excellent!";
+            resultMessage = "Perfect score! You have mastered this topic.";
+
+        } else if (score >= questions.length * 0.66) {
+
+            resultTitle = "Great Job!";
+            resultMessage = "You have a good understanding of this topic.";
+
+        } else if (score > 0) {
+
+            resultTitle = "Keep Practicing!";
+            resultMessage = "You are getting there. Try the quiz again.";
+
+        } else {
+
+            resultTitle = "Keep Learning!";
+            resultMessage = "Don't worry. Review the topic and try again.";
+
+        }
+
         quizContainer.innerHTML = `
             <div class="question-card result-card">
 
-                <h2>Quiz Complete!</h2>
+                <div class="result-icon">🏆</div>
 
-                <p>Your Score</p>
+                <h2>${resultTitle}</h2>
+
+                <p>${resultMessage}</p>
+
+                <div class="score-label">
+                    Your Score
+                </div>
 
                 <div class="score">
                     ${score} / ${questions.length}
                 </div>
 
-                <a href="/Home/Topics" class="next-button">
-                    BACK TO TOPICS
-                </a>
+                <div class="result-actions">
+
+                    <button type="button"
+                            class="next-button"
+                            onclick="location.reload()">
+                        TRY AGAIN
+                    </button>
+
+                    <a href="/Home/Topics"
+                       class="next-button">
+                        BACK TO TOPICS
+                    </a>
+
+                </div>
 
             </div>
         `;
