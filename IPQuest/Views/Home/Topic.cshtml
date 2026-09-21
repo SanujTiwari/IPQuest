@@ -21,6 +21,13 @@
         </p>
 
         <a asp-controller="Home"
+           asp-action="Quiz"
+           asp-route-id="@Model.Id"
+           class="topic-button">
+            START QUIZ
+        </a>
+
+        <a asp-controller="Home"
            asp-action="Topics"
            class="topic-button">
             BACK TO TOPICS

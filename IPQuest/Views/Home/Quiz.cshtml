@@ -1,0 +1,42 @@
+﻿@model List<IPQuest.Models.Question>
+
+@{
+    ViewData["Title"] = "Quiz";
+    var topic = ViewBag.Topic as IPQuest.Models.Topic;
+}
+
+<div class="quiz-page">
+
+    <div class="quiz-header">
+        <span class="topics-label">IP QUEST</span>
+
+        <h1>@topic?.Title Quiz</h1>
+
+        <p>Test your knowledge and choose the correct answer.</p>
+    </div>
+
+    <div class="quiz-container">
+
+        @foreach (var question in Model)
+        {
+            <div class="question-card">
+
+                <h2>@question.Text</h2>
+
+                <div class="answer-options">
+
+                    @foreach (var option in question.AnswerOptions)
+                    {
+                        <button type="button" class="answer-option">
+                            @option.Text
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>

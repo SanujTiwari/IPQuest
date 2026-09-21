@@ -1,5 +1,7 @@
 using IPQuest.Data;
+using IPQuest.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IPQuest.Controllers
 {
@@ -23,6 +25,7 @@ namespace IPQuest.Controllers
 
             return View(topics);
         }
+
         public IActionResult Topic(int id)
         {
             var topic = _context.Topics.FirstOrDefault(t => t.Id == id);
@@ -33,6 +36,25 @@ namespace IPQuest.Controllers
             }
 
             return View(topic);
+        }
+
+        public IActionResult Quiz(int id)
+        {
+            var questions = _context.Questions
+                .Where(q => q.TopicId == id)
+                .Include(q => q.AnswerOptions)
+                .ToList();
+
+            var topic = _context.Topics.FirstOrDefault(t => t.Id == id);
+
+            if (topic == null || questions.Count == 0)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Topic = topic;
+
+            return View(questions);
         }
     }
 }
