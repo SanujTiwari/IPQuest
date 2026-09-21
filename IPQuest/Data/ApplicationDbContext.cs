@@ -16,6 +16,7 @@ namespace IPQuest.Data
         public DbSet<Question> Questions { get; set; }
 
         public DbSet<AnswerOption> AnswerOptions { get; set; }
+        public DbSet<Player> Players { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

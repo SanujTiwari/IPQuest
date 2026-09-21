@@ -1,4 +1,4 @@
-﻿@model List<IPQuest.Models.Topic>
+@model List<IPQuest.Models.Topic>
 
 @{
     ViewData["Title"] = "IP Topics";
@@ -7,13 +7,13 @@
 <div class="topics-page">
 
     <div class="topics-header">
-        <span class="topics-label">YOUR QUEST BEGINS</span>
+        <span class="badge">YOUR QUEST BEGINS</span>
 
         <h1>Explore Intellectual Property</h1>
 
         <p>
             Choose a topic and discover how ideas, inventions, brands,
-            and creative work are protected.
+            and creative work are protected under the law.
         </p>
     </div>
 
@@ -37,8 +37,9 @@
                     <a asp-controller="Home"
                        asp-action="Topic"
                        asp-route-id="@topic.Id"
-                       class="topic-button">
-                        START
+                       class="topic-button"
+                       id="topic-card-@topic.Id">
+                        EXPLORE →
                     </a>
                 </div>
 

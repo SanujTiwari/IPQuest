@@ -1,4 +1,4 @@
-﻿@model IPQuest.Models.Topic
+@model IPQuest.Models.Topic
 
 @{
     ViewData["Title"] = Model.Title;
@@ -23,14 +23,16 @@
         <a asp-controller="Home"
            asp-action="Quiz"
            asp-route-id="@Model.Id"
-           class="topic-button">
-            START QUIZ
+           class="topic-button"
+           id="start-quiz-btn">
+            🎯 START QUIZ
         </a>
 
         <a asp-controller="Home"
            asp-action="Topics"
-           class="topic-button">
-            BACK TO TOPICS
+           class="topic-button"
+           id="back-topics-btn">
+            ← BACK TO TOPICS
         </a>
 
     </div>

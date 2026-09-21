@@ -1,20 +1,21 @@
-﻿@{
+@{
     ViewData["Title"] = "IP Quest";
 }
 
 <div class="hero">
     <div class="hero-content">
-        <p class="tagline">LEARN • PLAY • DISCOVER</p>
+        <span class="badge">LEARN • PLAY • DISCOVER</span>
 
         <h1>IP QUEST</h1>
 
         <p class="hero-description">
             Become an Intellectual Property Detective.
-            Learn how ideas, inventions, brands, and creative works are protected.
+            Learn how ideas, inventions, brands, and creative works are protected
+            through interactive quizzes and challenges.
         </p>
 
-        <a asp-controller="Home" asp-action="Topics" class="start-button">
-            START YOUR QUEST
+        <a asp-controller="Home" asp-action="Topics" class="btn-primary" id="hero-start-btn">
+            🚀 START YOUR QUEST
         </a>
     </div>
 </div>
@@ -24,25 +25,25 @@
     <div class="feature-card">
         <div class="feature-icon">©</div>
         <h3>Copyright</h3>
-        <p>Discover how creative works are protected.</p>
+        <p>Discover how creative works like music, art, and literature are protected.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">™</div>
         <h3>Trademark</h3>
-        <p>Learn how brands and logos are protected.</p>
+        <p>Learn how brands, logos, and symbols are protected from misuse.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">⚙</div>
         <h3>Patent</h3>
-        <p>Explore how inventions can be protected.</p>
+        <p>Explore how new inventions and technical innovations are safeguarded.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">🔐</div>
         <h3>Trade Secret</h3>
-        <p>Understand the value of confidential information.</p>
+        <p>Understand the value and protection of confidential business information.</p>
     </div>
 
 </section>

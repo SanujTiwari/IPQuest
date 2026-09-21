@@ -1,4 +1,4 @@
-﻿@model List<IPQuest.Models.Question>
+@model List<IPQuest.Models.Question>
 
 @{
     ViewData["Title"] = "Quiz";
@@ -8,11 +8,31 @@
 <div class="quiz-page">
 
     <div class="quiz-header">
-        <span class="topics-label">IP QUEST</span>
+        <span class="badge">IP QUEST</span>
 
         <h1>@topic?.Title Quiz</h1>
 
         <p>Choose the correct answer to continue your quest.</p>
+    </div>
+
+    <div class="quiz-stats">
+
+        <div class="quiz-stat">
+            <span class="stat-icon">🎯</span>
+            <div class="stat-info">
+                <span class="stat-label">SCORE</span>
+                <span class="stat-value" id="score-value">0</span>
+            </div>
+        </div>
+
+        <div class="quiz-stat">
+            <span class="stat-icon">⚡</span>
+            <div class="stat-info">
+                <span class="stat-label">XP</span>
+                <span class="stat-value" id="xp-value">0</span>
+            </div>
+        </div>
+
     </div>
 
     <div class="quiz-progress">
@@ -48,7 +68,8 @@
                     {
                         <button type="button"
                                 class="answer-option"
-                                data-correct="@option.IsCorrect.ToString().ToLower()">
+                                data-correct="@option.IsCorrect.ToString().ToLower()"
+                                id="option-@option.Id">
                             @option.Text
                         </button>
                     }
@@ -60,7 +81,7 @@
                 <button type="button"
                         class="next-button"
                         style="display: none;">
-                    NEXT
+                    NEXT →
                 </button>
 
             </div>
@@ -73,8 +94,12 @@
 <script>
     let currentQuestion = 0;
     let score = 0;
+    let xp = 0;
 
-    const questions = document.querySelectorAll(".quiz-question");
+    const XP_PER_CORRECT_ANSWER = 10;
+
+    const questions =
+        document.querySelectorAll(".quiz-question");
 
     const progressText =
         document.getElementById("progress-text");
@@ -84,6 +109,12 @@
 
     const progressFill =
         document.getElementById("progress-fill");
+
+    const scoreValue =
+        document.getElementById("score-value");
+
+    const xpValue =
+        document.getElementById("xp-value");
 
     function updateProgress() {
 
@@ -100,7 +131,14 @@
             `${progress}%`;
     }
 
+    function updateStats() {
+
+        scoreValue.textContent = score;
+        xpValue.textContent = xp;
+    }
+
     updateProgress();
+    updateStats();
 
     questions.forEach((question) => {
 
@@ -117,6 +155,7 @@
 
             option.addEventListener("click", function () {
 
+                // Disable all options
                 options.forEach(btn => {
                     btn.disabled = true;
                 });
@@ -126,36 +165,45 @@
 
                 if (isCorrect) {
 
-                    this.style.borderColor = "#22c55e";
+                    this.classList.add("correct");
 
                     score++;
+                    xp += XP_PER_CORRECT_ANSWER;
 
                     feedback.textContent =
-                        "Correct! +1 point";
+                        "✅ Correct! +10 XP";
 
-                    feedback.style.color =
-                        "#22c55e";
+                    feedback.classList.add("feedback-correct");
+
+                    // Dim other options
+                    options.forEach(btn => {
+                        if (btn !== this) {
+                            btn.classList.add("dimmed");
+                        }
+                    });
+
+                    updateStats();
 
                 } else {
 
-                    this.style.borderColor = "#ef4444";
+                    this.classList.add("incorrect");
 
                     feedback.textContent =
-                        "Not quite! The correct answer is shown in green.";
+                        "❌ Not quite! The correct answer is highlighted.";
 
-                    feedback.style.color =
-                        "#ef4444";
+                    feedback.classList.add("feedback-incorrect");
 
+                    // Show correct answer and dim others
                     options.forEach(btn => {
-
                         if (btn.dataset.correct === "true") {
-                            btn.style.borderColor = "#22c55e";
+                            btn.classList.add("correct");
+                        } else if (btn !== this) {
+                            btn.classList.add("dimmed");
                         }
-
                     });
                 }
 
-                nextButton.style.display = "block";
+                nextButton.style.display = "inline-flex";
             });
 
         });
@@ -189,33 +237,42 @@
 
         let resultTitle = "";
         let resultMessage = "";
+        let resultEmoji = "";
 
         if (score === questions.length) {
 
             resultTitle = "Excellent!";
-            resultMessage = "Perfect score! You have mastered this topic.";
+            resultMessage =
+                "Perfect score! You've truly mastered this topic. You're an IP champion!";
+            resultEmoji = "🏆";
 
         } else if (score >= questions.length * 0.66) {
 
             resultTitle = "Great Job!";
-            resultMessage = "You have a good understanding of this topic.";
+            resultMessage =
+                "You have a strong understanding of this topic. Keep going!";
+            resultEmoji = "🌟";
 
         } else if (score > 0) {
 
             resultTitle = "Keep Practicing!";
-            resultMessage = "You are getting there. Try the quiz again.";
+            resultMessage =
+                "You're getting there. Review the topic and try the quiz again.";
+            resultEmoji = "💪";
 
         } else {
 
             resultTitle = "Keep Learning!";
-            resultMessage = "Don't worry. Review the topic and try again.";
+            resultMessage =
+                "Don't worry — every expert was once a beginner. Review and try again!";
+            resultEmoji = "📖";
 
         }
 
         quizContainer.innerHTML = `
             <div class="question-card result-card">
 
-                <div class="result-icon">🏆</div>
+                <div class="result-icon">${resultEmoji}</div>
 
                 <h2>${resultTitle}</h2>
 
@@ -229,17 +286,25 @@
                     ${score} / ${questions.length}
                 </div>
 
+                <div class="score-label">
+                    XP Earned
+                </div>
+
+                <div class="score">
+                    ${xp} XP
+                </div>
+
                 <div class="result-actions">
 
                     <button type="button"
                             class="next-button"
                             onclick="location.reload()">
-                        TRY AGAIN
+                        🔄 TRY AGAIN
                     </button>
 
                     <a href="/Home/Topics"
                        class="next-button">
-                        BACK TO TOPICS
+                        📚 BACK TO TOPICS
                     </a>
 
                 </div>

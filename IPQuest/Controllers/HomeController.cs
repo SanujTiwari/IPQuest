@@ -56,5 +56,23 @@ namespace IPQuest.Controllers
 
             return View(questions);
         }
+        public IActionResult Player()
+        {
+            var player = _context.Players.FirstOrDefault();
+
+            if (player == null)
+            {
+                player = new Player
+                {
+                    Name = "Student",
+                    TotalXP = 0
+                };
+
+                _context.Players.Add(player);
+                _context.SaveChanges();
+            }
+
+            return View(player);
+        }
     }
 }

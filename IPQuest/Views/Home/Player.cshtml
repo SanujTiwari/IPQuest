@@ -1,0 +1,40 @@
+@model IPQuest.Models.Player
+
+@{
+    ViewData["Title"] = "Player";
+}
+
+<div class="topic-detail-page player-page">
+
+    <div class="topic-detail-card">
+
+        <div class="topic-detail-icon">
+            ⭐
+        </div>
+
+        <span class="topic-detail-label">IP QUEST PLAYER</span>
+
+        <h1>@Model.Name</h1>
+
+        <p>
+            Your journey through the world of Intellectual Property
+        </p>
+
+        <div class="xp-ring">
+            <div>
+                <span class="xp-number">@Model.TotalXP</span>
+                <br />
+                <span class="xp-label">TOTAL XP</span>
+            </div>
+        </div>
+
+        <a asp-controller="Home"
+           asp-action="Topics"
+           class="topic-button"
+           id="player-start-btn">
+            🚀 START QUEST
+        </a>
+
+    </div>
+
+</div>
