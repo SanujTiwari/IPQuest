@@ -12,27 +12,41 @@
 
         <h1>@topic?.Title Quiz</h1>
 
-        <p>Test your knowledge and choose the correct answer.</p>
+        <p>Choose the correct answer to continue your quest.</p>
     </div>
 
     <div class="quiz-container">
 
-        @foreach (var question in Model)
+        @for (int i = 0; i < Model.Count; i++)
         {
-            <div class="question-card">
+            <div class="question-card quiz-question"
+                 style="display: @(i == 0 ? "block" : "none");"
+                 data-question="@i">
 
-                <h2>@question.Text</h2>
+                <div class="question-number">
+                    Question @(i + 1) of @Model.Count
+                </div>
+
+                <h2>@Model[i].Text</h2>
 
                 <div class="answer-options">
 
-                    @foreach (var option in question.AnswerOptions)
+                    @foreach (var option in Model[i].AnswerOptions)
                     {
-                        <button type="button" class="answer-option">
+                        <button type="button"
+                                class="answer-option"
+                                data-correct="@option.IsCorrect.ToString().ToLower()">
                             @option.Text
                         </button>
                     }
 
                 </div>
+
+                <button type="button"
+                        class="next-button"
+                        style="display: none;">
+                    NEXT
+                </button>
 
             </div>
         }
@@ -40,3 +54,46 @@
     </div>
 
 </div>
+
+<script>
+    let currentQuestion = 0;
+
+    const questions = document.querySelectorAll(".quiz-question");
+
+    questions.forEach(question => {
+
+        const options = question.querySelectorAll(".answer-option");
+        const nextButton = question.querySelector(".next-button");
+
+        options.forEach(option => {
+
+            option.addEventListener("click", function () {
+
+                options.forEach(btn => {
+                    btn.disabled = true;
+                });
+
+                if (this.dataset.correct === "true") {
+                    this.style.borderColor = "#22c55e";
+                } else {
+                    this.style.borderColor = "#ef4444";
+                }
+
+                nextButton.style.display = "block";
+            });
+
+        });
+
+        nextButton.addEventListener("click", function () {
+
+            question.style.display = "none";
+
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                questions[currentQuestion].style.display = "block";
+            }
+        });
+
+    });
+</script>
