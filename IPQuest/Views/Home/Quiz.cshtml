@@ -57,10 +57,11 @@
 
 <script>
     let currentQuestion = 0;
+    let score = 0;
 
     const questions = document.querySelectorAll(".quiz-question");
 
-    questions.forEach(question => {
+    questions.forEach((question, index) => {
 
         const options = question.querySelectorAll(".answer-option");
         const nextButton = question.querySelector(".next-button");
@@ -75,8 +76,15 @@
 
                 if (this.dataset.correct === "true") {
                     this.style.borderColor = "#22c55e";
+                    score++;
                 } else {
                     this.style.borderColor = "#ef4444";
+
+                    options.forEach(btn => {
+                        if (btn.dataset.correct === "true") {
+                            btn.style.borderColor = "#22c55e";
+                        }
+                    });
                 }
 
                 nextButton.style.display = "block";
@@ -92,8 +100,32 @@
 
             if (currentQuestion < questions.length) {
                 questions[currentQuestion].style.display = "block";
+            } else {
+                showResult();
             }
+
         });
 
     });
+
+    function showResult() {
+
+        const quizContainer = document.querySelector(".quiz-container");
+
+        quizContainer.innerHTML = `
+            <div class="question-card result-card">
+                <h2>Quiz Complete!</h2>
+
+                <p>Your Score</p>
+
+                <div class="score">
+                    ${score} / ${questions.length}
+                </div>
+
+                <a href="/Home/Topics" class="next-button">
+                    BACK TO TOPICS
+                </a>
+            </div>
+        `;
+    }
 </script>
