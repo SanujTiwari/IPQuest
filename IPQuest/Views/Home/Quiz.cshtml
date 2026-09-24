@@ -1,22 +1,48 @@
 @model List<IPQuest.Models.Question>
 
 @{
-    ViewData["Title"] = "Quiz";
+    ViewData["Title"] = "Quiz Arena";
     var topic = ViewBag.Topic as IPQuest.Models.Topic;
+    var keys = new[] { "A", "B", "C", "D" };
 }
 
 <div class="quiz-page">
 
     <div class="quiz-header">
-        <span class="badge">IP QUEST</span>
-
-        <h1>@topic?.Title Quiz</h1>
-
-        <p>Choose the correct answer to continue your quest.</p>
+        <span class="badge">BATTLE ARENA</span>
+        <h1>@topic?.Title Quest</h1>
+        <p>Answer fast, unlock combos, and preserve your lives!</p>
     </div>
 
-    <div class="quiz-stats">
+    <!-- Live Game HUD Bar -->
+    <div class="quiz-top-hud">
 
+        <!-- Lives / Health Bar -->
+        <div class="quiz-lives" id="quiz-lives" title="Lives Remaining">
+            <span class="heart-icon" id="heart-1">❤️</span>
+            <span class="heart-icon" id="heart-2">❤️</span>
+            <span class="heart-icon" id="heart-3">❤️</span>
+        </div>
+
+        <!-- Combo Streak Badge -->
+        <div class="combo-badge" id="combo-badge" style="display: none;">
+            <span>🔥</span>
+            <span id="combo-text">1x COMBO</span>
+        </div>
+
+        <!-- 30-Second Countdown SVG Timer Ring -->
+        <div class="timer-ring-container" id="timer-ring-container" title="Time Remaining">
+            <svg class="timer-ring-svg" viewBox="0 0 60 60">
+                <circle class="timer-ring-bg" cx="30" cy="30" r="26"></circle>
+                <circle class="timer-ring-fill" id="timer-ring-fill" cx="30" cy="30" r="26"></circle>
+            </svg>
+            <span class="timer-text" id="timer-text">30</span>
+        </div>
+
+    </div>
+
+    <!-- Stats Display -->
+    <div class="quiz-stats">
         <div class="quiz-stat">
             <span class="stat-icon">🎯</span>
             <div class="stat-info">
@@ -28,26 +54,40 @@
         <div class="quiz-stat">
             <span class="stat-icon">⚡</span>
             <div class="stat-info">
-                <span class="stat-label">XP</span>
+                <span class="stat-label">TOTAL XP</span>
                 <span class="stat-value" id="xp-value">0</span>
             </div>
         </div>
-
     </div>
 
+    <!-- Progress Bar -->
     <div class="quiz-progress">
-
         <div class="progress-info">
             <span id="progress-text">Question 1 of @Model.Count</span>
             <span id="progress-percent">0%</span>
         </div>
-
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
         </div>
-
     </div>
 
+    <!-- Power-Ups Control Bar -->
+    <div class="powerup-bar">
+        <button type="button" class="powerup-btn" id="powerup-5050" title="Eliminate 2 wrong options">
+            <span>⚡</span>
+            <span>50/50</span>
+        </button>
+        <button type="button" class="powerup-btn" id="powerup-hint" title="Reveal Detective Clue">
+            <span>💡</span>
+            <span>HINT</span>
+        </button>
+        <button type="button" class="powerup-btn" id="powerup-freeze" title="Freeze timer for 10s">
+            <span>⏳</span>
+            <span>FREEZE</span>
+        </button>
+    </div>
+
+    <!-- Questions Container -->
     <div class="quiz-container">
 
         @for (int i = 0; i < Model.Count; i++)
@@ -64,13 +104,18 @@
 
                 <div class="answer-options">
 
-                    @foreach (var option in Model[i].AnswerOptions)
+                    @{ var options = Model[i].AnswerOptions.ToList(); }
+                    @for (int j = 0; j < options.Count; j++)
                     {
+                        var opt = options[j];
+                        var keyLabel = j < keys.Length ? keys[j] : "";
                         <button type="button"
                                 class="answer-option"
-                                data-correct="@option.IsCorrect.ToString().ToLower()"
-                                id="option-@option.Id">
-                            @option.Text
+                                data-correct="@opt.IsCorrect.ToString().ToLower()"
+                                data-key="@keyLabel"
+                                id="option-@opt.Id">
+                            <span class="key-badge">@keyLabel</span>
+                            <span class="option-text">@opt.Text</span>
                         </button>
                     }
 
@@ -81,7 +126,7 @@
                 <button type="button"
                         class="next-button"
                         style="display: none;">
-                    NEXT →
+                    NEXT QUESTION → [SPACE]
                 </button>
 
             </div>
@@ -92,224 +137,363 @@
 </div>
 
 <script>
-    let currentQuestion = 0;
-    let score = 0;
-    let xp = 0;
+    document.addEventListener("DOMContentLoaded", function () {
+        const topicId = @(topic?.Id ?? 1);
+        let currentQuestion = 0;
+        let score = 0;
+        let xp = 0;
+        let lives = 3;
+        let combo = 0;
+        let maxCombo = 0;
+        let powerup5050Used = false;
+        let powerupHintUsed = false;
+        let powerupFreezeUsed = false;
 
-    const XP_PER_CORRECT_ANSWER = 10;
+        // 30s Question Timer
+        const QUESTION_TIME = 30;
+        let timeLeft = QUESTION_TIME;
+        let timerInterval = null;
 
-    const questions =
-        document.querySelectorAll(".quiz-question");
+        const XP_PER_CORRECT_ANSWER = 10;
+        const questions = document.querySelectorAll(".quiz-question");
+        const progressText = document.getElementById("progress-text");
+        const progressPercent = document.getElementById("progress-percent");
+        const progressFill = document.getElementById("progress-fill");
+        const scoreValue = document.getElementById("score-value");
+        const xpValue = document.getElementById("xp-value");
+        const comboBadge = document.getElementById("combo-badge");
+        const comboText = document.getElementById("combo-text");
 
-    const progressText =
-        document.getElementById("progress-text");
+        const timerText = document.getElementById("timer-text");
+        const timerRingFill = document.getElementById("timer-ring-fill");
+        const timerContainer = document.getElementById("timer-ring-container");
 
-    const progressPercent =
-        document.getElementById("progress-percent");
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = QUESTION_TIME;
+            updateTimerUI();
 
-    const progressFill =
-        document.getElementById("progress-fill");
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
 
-    const scoreValue =
-        document.getElementById("score-value");
-
-    const xpValue =
-        document.getElementById("xp-value");
-
-    function updateProgress() {
-
-        const progress =
-            ((currentQuestion + 1) / questions.length) * 100;
-
-        progressText.textContent =
-            `Question ${currentQuestion + 1} of ${questions.length}`;
-
-        progressPercent.textContent =
-            `${Math.round(progress)}%`;
-
-        progressFill.style.width =
-            `${progress}%`;
-    }
-
-    function updateStats() {
-
-        scoreValue.textContent = score;
-        xpValue.textContent = xp;
-    }
-
-    updateProgress();
-    updateStats();
-
-    questions.forEach((question) => {
-
-        const options =
-            question.querySelectorAll(".answer-option");
-
-        const nextButton =
-            question.querySelector(".next-button");
-
-        const feedback =
-            question.querySelector(".answer-feedback");
-
-        options.forEach(option => {
-
-            option.addEventListener("click", function () {
-
-                // Disable all options
-                options.forEach(btn => {
-                    btn.disabled = true;
-                });
-
-                const isCorrect =
-                    this.dataset.correct === "true";
-
-                if (isCorrect) {
-
-                    this.classList.add("correct");
-
-                    score++;
-                    xp += XP_PER_CORRECT_ANSWER;
-
-                    feedback.textContent =
-                        "✅ Correct! +10 XP";
-
-                    feedback.classList.add("feedback-correct");
-
-                    // Dim other options
-                    options.forEach(btn => {
-                        if (btn !== this) {
-                            btn.classList.add("dimmed");
-                        }
-                    });
-
-                    updateStats();
-
-                } else {
-
-                    this.classList.add("incorrect");
-
-                    feedback.textContent =
-                        "❌ Not quite! The correct answer is highlighted.";
-
-                    feedback.classList.add("feedback-incorrect");
-
-                    // Show correct answer and dim others
-                    options.forEach(btn => {
-                        if (btn.dataset.correct === "true") {
-                            btn.classList.add("correct");
-                        } else if (btn !== this) {
-                            btn.classList.add("dimmed");
-                        }
-                    });
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    if (window.IPQuestAudio) window.IPQuestAudio.playTick();
                 }
 
-                nextButton.style.display = "inline-flex";
-            });
-
-        });
-
-        nextButton.addEventListener("click", function () {
-
-            question.style.display = "none";
-
-            currentQuestion++;
-
-            if (currentQuestion < questions.length) {
-
-                questions[currentQuestion].style.display = "block";
-
-                updateProgress();
-
-            } else {
-
-                showResult();
-
-            }
-
-        });
-
-    });
-
-    function showResult() {
-
-        const quizContainer =
-            document.querySelector(".quiz-container");
-
-        let resultTitle = "";
-        let resultMessage = "";
-        let resultEmoji = "";
-
-        if (score === questions.length) {
-
-            resultTitle = "Excellent!";
-            resultMessage =
-                "Perfect score! You've truly mastered this topic. You're an IP champion!";
-            resultEmoji = "🏆";
-
-        } else if (score >= questions.length * 0.66) {
-
-            resultTitle = "Great Job!";
-            resultMessage =
-                "You have a strong understanding of this topic. Keep going!";
-            resultEmoji = "🌟";
-
-        } else if (score > 0) {
-
-            resultTitle = "Keep Practicing!";
-            resultMessage =
-                "You're getting there. Review the topic and try the quiz again.";
-            resultEmoji = "💪";
-
-        } else {
-
-            resultTitle = "Keep Learning!";
-            resultMessage =
-                "Don't worry — every expert was once a beginner. Review and try again!";
-            resultEmoji = "📖";
-
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
         }
 
-        quizContainer.innerHTML = `
-            <div class="question-card result-card">
+        function updateTimerUI() {
+            if (timerText) timerText.textContent = timeLeft;
+            const fullDash = 163;
+            const offset = fullDash - (timeLeft / QUESTION_TIME) * fullDash;
+            if (timerRingFill) timerRingFill.style.strokeDashoffset = offset;
 
-                <div class="result-icon">${resultEmoji}</div>
+            if (timeLeft <= 5) {
+                if (timerContainer) timerContainer.classList.add("warning");
+            } else {
+                if (timerContainer) timerContainer.classList.remove("warning");
+            }
+        }
 
-                <h2>${resultTitle}</h2>
+        function handleTimeOut() {
+            const currentCard = questions[currentQuestion];
+            const options = currentCard.querySelectorAll(".answer-option");
+            const feedback = currentCard.querySelector(".answer-feedback");
+            const nextButton = currentCard.querySelector(".next-button");
 
-                <p>${resultMessage}</p>
+            options.forEach(btn => btn.disabled = true);
+            loseLife();
 
-                <div class="score-label">
-                    Your Score
+            feedback.textContent = "⏱️ Time's Up! Moving to next challenge.";
+            feedback.classList.add("feedback-incorrect");
+
+            options.forEach(btn => {
+                if (btn.dataset.correct === "true") {
+                    btn.classList.add("correct");
+                }
+            });
+
+            if (window.IPQuestAudio) window.IPQuestAudio.playWrong();
+            nextButton.style.display = "inline-flex";
+        }
+
+        function loseLife() {
+            combo = 0;
+            updateComboUI();
+            lives--;
+            const heart = document.getElementById(`heart-${lives + 1}`);
+            if (heart) heart.classList.add("lost");
+
+            if (lives <= 0) {
+                setTimeout(() => {
+                    if (window.IPQuestGame) {
+                        window.IPQuestGame.showToast("💔 Game Over! Out of lives.", "danger");
+                    }
+                }, 300);
+            }
+        }
+
+        function updateComboUI() {
+            if (combo > maxCombo) maxCombo = combo;
+            if (combo >= 2) {
+                if (comboBadge) comboBadge.style.display = "inline-flex";
+                if (comboText) comboText.textContent = `${combo}x COMBO`;
+            } else {
+                if (comboBadge) comboBadge.style.display = "none";
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+            progressPercent.textContent = `${Math.round(progress)}%`;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        function updateStats() {
+            scoreValue.textContent = score;
+            xpValue.textContent = xp;
+        }
+
+        function spawnFloatingXP(x, y, text) {
+            const el = document.createElement("div");
+            el.className = "floating-xp-popup";
+            el.textContent = text;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+
+        // Setup Power-ups
+        const btn5050 = document.getElementById("powerup-5050");
+        const btnHint = document.getElementById("powerup-hint");
+        const btnFreeze = document.getElementById("powerup-freeze");
+
+        if (btn5050) {
+            btn5050.addEventListener("click", function () {
+                if (powerup5050Used) return;
+                powerup5050Used = true;
+                btn5050.disabled = true;
+
+                if (window.IPQuestAudio) window.IPQuestAudio.playPowerup();
+
+                const currentCard = questions[currentQuestion];
+                const options = Array.from(currentCard.querySelectorAll(".answer-option"));
+                const wrongOptions = options.filter(o => o.dataset.correct !== "true");
+
+                // Disable 2 wrong options
+                wrongOptions.slice(0, 2).forEach(opt => {
+                    opt.disabled = true;
+                    opt.style.opacity = "0.2";
+                    opt.style.pointerEvents = "none";
+                });
+
+                if (window.IPQuestGame) window.IPQuestGame.showToast("⚡ 50/50 Power-up Activated!", "info");
+            });
+        }
+
+        if (btnHint) {
+            btnHint.addEventListener("click", function () {
+                if (powerupHintUsed) return;
+                powerupHintUsed = true;
+                btnHint.disabled = true;
+
+                if (window.IPQuestAudio) window.IPQuestAudio.playPowerup();
+                if (window.IPQuestGame) {
+                    window.IPQuestGame.showToast("💡 Hint: Focus on the core objective of this IP right!", "info");
+                }
+            });
+        }
+
+        if (btnFreeze) {
+            btnFreeze.addEventListener("click", function () {
+                if (powerupFreezeUsed) return;
+                powerupFreezeUsed = true;
+                btnFreeze.disabled = true;
+
+                timeLeft += 10;
+                updateTimerUI();
+                if (window.IPQuestAudio) window.IPQuestAudio.playPowerup();
+                if (window.IPQuestGame) window.IPQuestGame.showToast("⏳ Time Freeze! +10 Seconds", "info");
+            });
+        }
+
+        // Initialize First Question Timer & UI
+        updateProgress();
+        updateStats();
+        startTimer();
+
+        // Attach Handlers to Question Cards
+        questions.forEach((question, idx) => {
+            const options = question.querySelectorAll(".answer-option");
+            const nextButton = question.querySelector(".next-button");
+            const feedback = question.querySelector(".answer-feedback");
+
+            options.forEach(option => {
+                option.addEventListener("click", function (e) {
+                    clearInterval(timerInterval);
+
+                    options.forEach(btn => btn.disabled = true);
+                    const isCorrect = this.dataset.correct === "true";
+
+                    if (isCorrect) {
+                        combo++;
+                        updateComboUI();
+
+                        const multiplier = Math.min(3, combo);
+                        const earnedXP = XP_PER_CORRECT_ANSWER * multiplier;
+
+                        this.classList.add("correct");
+                        score++;
+                        xp += earnedXP;
+
+                        feedback.textContent = `✅ Correct! +${earnedXP} XP ${multiplier > 1 ? `(${multiplier}x Combo!)` : ''}`;
+                        feedback.classList.add("feedback-correct");
+
+                        options.forEach(btn => {
+                            if (btn !== this) btn.classList.add("dimmed");
+                        });
+
+                        updateStats();
+
+                        if (window.IPQuestAudio) {
+                            if (combo >= 2) window.IPQuestAudio.playCombo(multiplier);
+                            else window.IPQuestAudio.playCorrect();
+                        }
+
+                        spawnFloatingXP(e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2, `+${earnedXP} XP`);
+
+                    } else {
+                        this.classList.add("incorrect");
+                        loseLife();
+
+                        feedback.textContent = "❌ Not quite! The correct answer is highlighted.";
+                        feedback.classList.add("feedback-incorrect");
+
+                        options.forEach(btn => {
+                            if (btn.dataset.correct === "true") {
+                                btn.classList.add("correct");
+                            } else if (btn !== this) {
+                                btn.classList.add("dimmed");
+                            }
+                        });
+
+                        if (window.IPQuestAudio) window.IPQuestAudio.playWrong();
+                    }
+
+                    nextButton.style.display = "inline-flex";
+                });
+            });
+
+            nextButton.addEventListener("click", function () {
+                question.style.display = "none";
+                currentQuestion++;
+
+                if (currentQuestion < questions.length && lives > 0) {
+                    questions[currentQuestion].style.display = "block";
+                    updateProgress();
+                    startTimer();
+                } else {
+                    showResult();
+                }
+            });
+        });
+
+        // Keyboard Shortcuts (A, B, C, D & Space)
+        document.addEventListener("keydown", function (e) {
+            const key = e.key.toUpperCase();
+
+            // Ignore if active inside inputs
+            if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+
+            const currentCard = questions[currentQuestion];
+            if (!currentCard || currentCard.style.display === "none") return;
+
+            const nextButton = currentCard.querySelector(".next-button");
+
+            if (e.code === "Space" && nextButton && nextButton.style.display !== "none") {
+                e.preventDefault();
+                nextButton.click();
+                return;
+            }
+
+            const options = Array.from(currentCard.querySelectorAll(".answer-option"));
+            let targetIdx = -1;
+
+            if (["A", "1"].includes(key)) targetIdx = 0;
+            if (["B", "2"].includes(key)) targetIdx = 1;
+            if (["C", "3"].includes(key)) targetIdx = 2;
+            if (["D", "4"].includes(key)) targetIdx = 3;
+
+            if (targetIdx >= 0 && targetIdx < options.length && !options[targetIdx].disabled) {
+                options[targetIdx].click();
+            }
+        });
+
+        function showResult() {
+            clearInterval(timerInterval);
+            const quizContainer = document.querySelector(".quiz-container");
+
+            let resultTitle = "";
+            let resultMessage = "";
+            let resultEmoji = "";
+
+            if (score === questions.length) {
+                resultTitle = "PERFECT VICTORY!";
+                resultMessage = "Mastery achieved! You scored a flawless victory on this quest!";
+                resultEmoji = "🏆";
+            } else if (score >= questions.length * 0.66) {
+                resultTitle = "GREAT QUEST!";
+                resultMessage = "Strong IP knowledge! You earned high honor on this battle.";
+                resultEmoji = "🌟";
+            } else if (score > 0) {
+                resultTitle = "QUEST COMPLETED!";
+                resultMessage = "Good attempt! Review the domain and conquer it next time.";
+                resultEmoji = "💪";
+            } else {
+                resultTitle = "DEFEAT!";
+                resultMessage = "Don't give up! Every IP Master started as a novice.";
+                resultEmoji = "📖";
+            }
+
+            // Record to Game Engine
+            if (window.IPQuestGame) {
+                window.IPQuestGame.recordQuizComplete(topicId, score, questions.length, xp, maxCombo);
+            }
+
+            if (score >= questions.length * 0.66 && window.IPQuestConfetti) {
+                window.IPQuestConfetti.burst();
+            }
+
+            quizContainer.innerHTML = `
+                <div class="question-card result-card">
+                    <div class="result-icon">${resultEmoji}</div>
+                    <h2>${resultTitle}</h2>
+                    <p>${resultMessage}</p>
+
+                    <div class="score-label">Questions Cleared</div>
+                    <div class="score">${score} / ${questions.length}</div>
+
+                    <div class="score-label">XP Earned</div>
+                    <div class="score" style="font-size: 2.8rem; color: #ffd700;">+${xp} XP</div>
+
+                    <div class="result-actions">
+                        <button type="button" class="next-button" onclick="location.reload()">
+                            🔄 REPLAY QUEST
+                        </button>
+                        <a href="/Home/Topics" class="next-button">
+                            🗺️ QUEST MAP
+                        </a>
+                    </div>
                 </div>
-
-                <div class="score">
-                    ${score} / ${questions.length}
-                </div>
-
-                <div class="score-label">
-                    XP Earned
-                </div>
-
-                <div class="score">
-                    ${xp} XP
-                </div>
-
-                <div class="result-actions">
-
-                    <button type="button"
-                            class="next-button"
-                            onclick="location.reload()">
-                        🔄 TRY AGAIN
-                    </button>
-
-                    <a href="/Home/Topics"
-                       class="next-button">
-                        📚 BACK TO TOPICS
-                    </a>
-
-                </div>
-
-            </div>
-        `;
-    }
+            `;
+        }
+    });
 </script>

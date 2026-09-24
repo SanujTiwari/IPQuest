@@ -3,37 +3,69 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="IPQuest — Learn Intellectual Property law through interactive quizzes. Explore Copyright, Trademark, Patent, and Trade Secrets." />
-    <title>@ViewData["Title"] - IPQuest</title>
+    <meta name="description" content="IPQuest — Learn Intellectual Property law through an interactive gamified arcade quest. Master Copyright, Trademark, Patent, and Trade Secrets." />
+    <title>@ViewData["Title"] - IPQuest Arcade</title>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Orbitron & Press Start 2P for Arcade styling + Outfit & Inter for body -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet" />
 
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
 
-    <!-- Particle Background -->
+    <!-- Canvas Layers for Particles and Celebration Confetti -->
     <canvas id="particles-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
 
-    <!-- Navigation -->
+    <!-- Navigation Header with Live Arcade HUD -->
     <nav class="site-nav" id="site-nav">
-        <a asp-controller="Home" asp-action="Index" class="nav-brand">IPQUEST</a>
+        <div class="nav-left">
+            <a asp-controller="Home" asp-action="Index" class="nav-brand">
+                <span class="brand-icon">⚡</span>
+                <span class="brand-text">IPQUEST</span>
+                <span class="arcade-tag">ARCADE</span>
+            </a>
+        </div>
 
-        <button class="nav-toggle" aria-label="Toggle navigation">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <!-- Live Player HUD Bar -->
+        <div class="hud-bar" id="hud-bar">
+            <div class="hud-item hud-level" title="Player Level">
+                <span class="hud-badge" id="hud-level-badge">LVL 1</span>
+                <span class="hud-title" id="hud-player-title">Novice</span>
+            </div>
 
-        <ul class="nav-links">
-            <li><a asp-controller="Home" asp-action="Index" id="nav-home">🏠 Home</a></li>
-            <li><a asp-controller="Home" asp-action="Topics" id="nav-topics">📚 Topics</a></li>
-            <li><a asp-controller="Home" asp-action="Player" id="nav-player">⭐ Player</a></li>
-        </ul>
+            <div class="hud-item hud-xp-container" title="XP Progress to Next Level">
+                <div class="hud-xp-info">
+                    <span class="hud-label">XP</span>
+                    <span class="hud-xp-val" id="hud-xp-text">0 / 100</span>
+                </div>
+                <div class="hud-xp-bar">
+                    <div class="hud-xp-fill" id="hud-xp-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Sound FX Toggle Button -->
+            <button type="button" class="sfx-toggle-btn" id="sfx-toggle-btn" aria-label="Toggle Sound Effects" title="Toggle Sound FX (Web Audio)">
+                <span class="sfx-icon" id="sfx-icon">🔊</span>
+                <span class="sfx-text" id="sfx-text">SFX ON</span>
+            </button>
+        </div>
+
+        <div class="nav-right">
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a asp-controller="Home" asp-action="Index" id="nav-home">🎮 Home</a></li>
+                <li><a asp-controller="Home" asp-action="Topics" id="nav-topics">🗺️ Quests</a></li>
+                <li><a asp-controller="Home" asp-action="Player" id="nav-player">🏆 Profile</a></li>
+            </ul>
+        </div>
     </nav>
 
     <!-- Main Content -->
@@ -43,17 +75,20 @@
         </main>
     </div>
 
+    <!-- Floating Toast Notification Container -->
+    <div class="game-toast-container" id="game-toast-container"></div>
+
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-content">
-            <span class="footer-brand">IPQUEST</span>
+            <span class="footer-brand">IPQUEST ARCADE</span>
             <div class="footer-links">
                 <a asp-controller="Home" asp-action="Index">Home</a>
-                <a asp-controller="Home" asp-action="Topics">Topics</a>
-                <a asp-controller="Home" asp-action="Player">Player</a>
+                <a asp-controller="Home" asp-action="Topics">Quests</a>
+                <a asp-controller="Home" asp-action="Player">Profile & Badges</a>
                 <a asp-controller="Home" asp-action="Privacy">Privacy</a>
             </div>
-            <span>&copy; 2026 IPQuest — Learn IP with Play</span>
+            <span>&copy; 2026 IPQuest — Interactive IP Arcade & Gamified Learning</span>
         </div>
     </footer>
 
@@ -61,3 +96,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

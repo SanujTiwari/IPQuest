@@ -1,49 +1,181 @@
 @{
-    ViewData["Title"] = "IP Quest";
+    ViewData["Title"] = "IP Quest Arcade";
 }
 
+<!-- Arcade Hero Section -->
 <div class="hero">
     <div class="hero-content">
-        <span class="badge">LEARN • PLAY • DISCOVER</span>
+        <span class="badge">🎮 INTERACTIVE IP ARCADE • GAMIFIED LEARNING</span>
 
-        <h1>IP QUEST</h1>
+        <h1 class="gradient-text">IP QUEST</h1>
 
         <p class="hero-description">
-            Become an Intellectual Property Detective.
-            Learn how ideas, inventions, brands, and creative works are protected
-            through interactive quizzes and challenges.
+            Become an Intellectual Property Detective. Master Copyrights, Trademarks,
+            Patents, and Trade Secrets through interactive arcade quests, power-ups, and live challenges!
         </p>
 
-        <a asp-controller="Home" asp-action="Topics" class="btn-primary" id="hero-start-btn">
-            🚀 START YOUR QUEST
-        </a>
+        <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+            <a asp-controller="Home" asp-action="Topics" class="btn-primary" id="hero-start-btn">
+                ⚡ LAUNCH QUEST MAP
+            </a>
+            <a href="#mini-game" class="btn-secondary">
+                🎯 PLAY SORTING ARCADE
+            </a>
+        </div>
     </div>
 </div>
 
+<!-- Features Section -->
 <section class="features">
 
     <div class="feature-card">
         <div class="feature-icon">©</div>
-        <h3>Copyright</h3>
-        <p>Discover how creative works like music, art, and literature are protected.</p>
+        <h3>Copyright Realm</h3>
+        <p>Discover how creative works like songs, movies, code, and artwork are protected.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">™</div>
-        <h3>Trademark</h3>
-        <p>Learn how brands, logos, and symbols are protected from misuse.</p>
+        <h3>Trademark District</h3>
+        <p>Learn how brand names, logos, slogans, and symbols prevent market confusion.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">⚙</div>
-        <h3>Patent</h3>
-        <p>Explore how new inventions and technical innovations are safeguarded.</p>
+        <h3>Patent Citadel</h3>
+        <p>Explore how novel inventions, machines, and technical innovations are patented.</p>
     </div>
 
     <div class="feature-card">
         <div class="feature-icon">🔐</div>
-        <h3>Trade Secret</h3>
-        <p>Understand the value and protection of confidential business information.</p>
+        <h3>Trade Secret Vault</h3>
+        <p>Understand how confidential business information and secret recipes are guarded.</p>
     </div>
 
 </section>
+
+<!-- Interactive IP Sorting Arcade Mini-Game Section -->
+<section class="mini-game-section" id="mini-game">
+    <div class="mini-game-card">
+
+        <div class="mini-game-header">
+            <span class="badge">INTERACTIVE PLAYGROUND</span>
+            <h2>🎯 IP Classifier Arcade</h2>
+            <p>Classify the IP asset into the correct protection container to earn bonus XP!</p>
+        </div>
+
+        <div class="quiz-stats" style="margin-bottom: 20px;">
+            <div class="quiz-stat">
+                <span class="stat-icon">⭐</span>
+                <div class="stat-info">
+                    <span class="stat-label">ARCADE SCORE</span>
+                    <span class="stat-value" id="minigame-score">0</span>
+                </div>
+            </div>
+            <div class="quiz-stat">
+                <span class="stat-icon">🔥</span>
+                <div class="stat-info">
+                    <span class="stat-label">STREAK</span>
+                    <span class="stat-value" id="minigame-streak">0x</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item to Classify -->
+        <div class="sort-item-box" id="sort-item-box">
+            <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px;">ASSET TO PROTECT</span>
+            <div class="sort-item-text" id="sort-item-text">🎵 Studio Song Recording</div>
+        </div>
+
+        <!-- Target Bins -->
+        <div class="sort-bins-grid">
+            <div class="sort-bin" data-type="copyright">
+                <div class="sort-bin-icon">©</div>
+                <div class="sort-bin-title">Copyright</div>
+            </div>
+            <div class="sort-bin" data-type="trademark">
+                <div class="sort-bin-icon">™</div>
+                <div class="sort-bin-title">Trademark</div>
+            </div>
+            <div class="sort-bin" data-type="patent">
+                <div class="sort-bin-icon">⚙</div>
+                <div class="sort-bin-title">Patent</div>
+            </div>
+            <div class="sort-bin" data-type="tradesecret">
+                <div class="sort-bin-icon">🔐</div>
+                <div class="sort-bin-title">Trade Secret</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const scenarios = [
+            { text: "🎵 Studio Song Recording & Lyrics", type: "copyright" },
+            { text: "🏷️ Company Brand Logo & Slogan", type: "trademark" },
+            { text: "⚡ New Solar Engine Invention Design", type: "patent" },
+            { text: "🥤 Secret Soft Drink Recipe Formula", type: "tradesecret" },
+            { text: "📖 Fantasy Novel Manuscript", type: "copyright" },
+            { text: "👟 Nike Swoosh Brand Symbol", type: "trademark" },
+            { text: "🔋 Fast-Charging Battery Circuitry Patent", type: "patent" },
+            { text: "📋 Confidential Client Contact List", type: "tradesecret" }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let streak = 0;
+
+        const itemText = document.getElementById("sort-item-text");
+        const scoreVal = document.getElementById("minigame-score");
+        const streakVal = document.getElementById("minigame-streak");
+        const bins = document.querySelectorAll(".sort-bin");
+
+        function loadScenario() {
+            if (currentIndex >= scenarios.length) {
+                // Completed Mini-Game Loop!
+                if (window.IPQuestConfetti) window.IPQuestConfetti.burst();
+                if (window.IPQuestGame) {
+                    window.IPQuestGame.addXP(30);
+                    window.IPQuestGame.showToast("🎉 IP Classifier Cleared! +30 Bonus XP!", "gold");
+                }
+                currentIndex = 0;
+            }
+            if (itemText) itemText.textContent = scenarios[currentIndex].text;
+        }
+
+        bins.forEach(bin => {
+            bin.addEventListener("click", function () {
+                const selectedType = this.dataset.type;
+                const correctType = scenarios[currentIndex].type;
+
+                if (selectedType === correctType) {
+                    score += 10;
+                    streak += 1;
+                    if (scoreVal) scoreVal.textContent = score;
+                    if (streakVal) streakVal.textContent = `${streak}x`;
+
+                    if (window.IPQuestAudio) window.IPQuestAudio.playCorrect();
+                    if (window.IPQuestGame) window.IPQuestGame.showToast("✅ Correct Classification! +10 XP", "success");
+
+                    this.style.borderColor = "var(--color-correct)";
+                    setTimeout(() => this.style.borderColor = "", 400);
+
+                    currentIndex++;
+                    loadScenario();
+                } else {
+                    streak = 0;
+                    if (streakVal) streakVal.textContent = "0x";
+                    if (window.IPQuestAudio) window.IPQuestAudio.playWrong();
+                    if (window.IPQuestGame) window.IPQuestGame.showToast("❌ Incorrect Bin! Try again.", "info");
+
+                    this.style.borderColor = "var(--color-incorrect)";
+                    setTimeout(() => this.style.borderColor = "", 400);
+                }
+            });
+        });
+
+        loadScenario();
+    });
+</script>

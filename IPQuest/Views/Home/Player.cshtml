@@ -1,40 +1,168 @@
 @model IPQuest.Models.Player
 
 @{
-    ViewData["Title"] = "Player";
+    ViewData["Title"] = "Player Trophy Hall";
 }
 
-<div class="topic-detail-page player-page">
+<div class="topic-detail-page player-page" style="flex-direction: column; align-items: center;">
 
-    <div class="topic-detail-card">
+    <div class="topic-detail-card" style="max-width: 650px;">
 
         <div class="topic-detail-icon">
             ⭐
         </div>
 
-        <span class="topic-detail-label">IP QUEST PLAYER</span>
+        <span class="topic-detail-label" id="player-card-level">LVL 1 • NOVICE</span>
 
-        <h1>@Model.Name</h1>
+        <h1 class="gradient-text" id="player-card-name">@Model.Name</h1>
 
-        <p>
-            Your journey through the world of Intellectual Property
+        <p id="player-card-title-display">
+            Detective of Intellectual Property
         </p>
 
+        <!-- Animated XP Ring -->
         <div class="xp-ring">
             <div>
-                <span class="xp-number">@Model.TotalXP</span>
+                <span class="xp-number" id="player-card-xp">0</span>
                 <br />
                 <span class="xp-label">TOTAL XP</span>
             </div>
         </div>
 
-        <a asp-controller="Home"
-           asp-action="Topics"
-           class="topic-button"
-           id="player-start-btn">
-            🚀 START QUEST
-        </a>
+        <!-- Player Title Customizer -->
+        <div style="margin: 20px 0;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">CUSTOMIZE TITLE BADGE</label>
+            <select id="title-selector" class="sfx-toggle-btn" style="padding: 10px 20px; font-size: 0.9rem; background: rgba(15,18,35,0.9);">
+                <option value="Novice Detective">Novice Detective</option>
+                <option value="IP Investigator">IP Investigator</option>
+                <option value="Patent Titan">Patent Titan</option>
+                <option value="Trademark Ninja">Trademark Ninja</option>
+                <option value="IP Archmage">IP Archmage</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a asp-controller="Home" asp-action="Topics" class="topic-button" id="player-start-btn">
+                ⚡ LAUNCH QUEST MAP
+            </a>
+
+            <!-- Arcade Sound Jukebox Tester Button -->
+            <button type="button" class="topic-button" id="jukebox-btn" style="background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);">
+                🎵 SOUND JUKEBOX
+            </button>
+        </div>
 
     </div>
 
+    <!-- Trophy Hall & Achievements Grid -->
+    <div class="trophy-hall-section" style="max-width: 800px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span class="badge">TROPHY HALL</span>
+            <h2 style="font-family: var(--font-arcade); color: var(--accent-gold);">Earned Achievements</h2>
+        </div>
+
+        <div class="achievements-grid" id="achievements-grid">
+            <div class="achievement-card locked" id="ach-first-quest">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-title">First Quest</div>
+                <div class="achievement-desc">Complete your first IP Quest</div>
+            </div>
+
+            <div class="achievement-card locked" id="ach-on-fire">
+                <div class="achievement-icon">🔥</div>
+                <div class="achievement-title">On Fire</div>
+                <div class="achievement-desc">Reach a 2x+ Combo Streak</div>
+            </div>
+
+            <div class="achievement-card locked" id="ach-perfect">
+                <div class="achievement-icon">🧠</div>
+                <div class="achievement-title">Perfect Score</div>
+                <div class="achievement-desc">Clear 100% on any quiz</div>
+            </div>
+
+            <div class="achievement-card locked" id="ach-level5">
+                <div class="achievement-icon">👑</div>
+                <div class="achievement-title">IP Archmage</div>
+                <div class="achievement-desc">Reach Player Level 5</div>
+            </div>
+
+            <div class="achievement-card locked" id="ach-classifier">
+                <div class="achievement-icon">🎯</div>
+                <div class="achievement-title">Arcade Classifier</div>
+                <div class="achievement-desc">Clear the IP Sorting Arcade</div>
+            </div>
+
+            <div class="achievement-card locked" id="ach-collector">
+                <div class="achievement-icon">⭐</div>
+                <div class="achievement-title">Star Collector</div>
+                <div class="achievement-desc">Earn 3 Stars on any Quest</div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!window.IPQuestGame) return;
+
+        const state = window.IPQuestGame.getState();
+        const info = window.IPQuestGame.getLevelInfo(state.totalXP);
+
+        const cardLevel = document.getElementById("player-card-level");
+        const cardXP = document.getElementById("player-card-xp");
+        const cardTitle = document.getElementById("player-card-title-display");
+        const titleSelect = document.getElementById("title-selector");
+        const jukeboxBtn = document.getElementById("jukebox-btn");
+
+        if (cardLevel) cardLevel.textContent = `LVL ${info.level} • ${info.title.toUpperCase()}`;
+        if (cardXP) cardXP.textContent = state.totalXP;
+        if (cardTitle) cardTitle.textContent = `Title: ${info.title}`;
+
+        if (titleSelect) {
+            titleSelect.value = state.titleOverride || info.title;
+            titleSelect.addEventListener("change", function () {
+                window.IPQuestGame.setTitle(this.value);
+                if (cardTitle) cardTitle.textContent = `Title: ${this.value}`;
+                if (cardLevel) cardLevel.textContent = `LVL ${info.level} • ${this.value.toUpperCase()}`;
+                if (window.IPQuestGame) window.IPQuestGame.showToast(`Title updated to ${this.value}!`, "gold");
+            });
+        }
+
+        // Sound FX Jukebox Tester
+        if (jukeboxBtn) {
+            jukeboxBtn.addEventListener("click", function () {
+                if (window.IPQuestAudio) window.IPQuestAudio.playFanfare();
+                if (window.IPQuestConfetti) window.IPQuestConfetti.burst();
+                if (window.IPQuestGame) window.IPQuestGame.showToast("🎵 Playing 8-bit Fanfare Flourish!", "gold");
+            });
+        }
+
+        // Evaluate Achievements Status
+        if (state.quizzesCompleted > 0) {
+            const el = document.getElementById("ach-first-quest");
+            if (el) { el.classList.remove("locked"); el.classList.add("unlocked"); }
+        }
+
+        if (state.maxCombo >= 2) {
+            const el = document.getElementById("ach-on-fire");
+            if (el) { el.classList.remove("locked"); el.classList.add("unlocked"); }
+        }
+
+        if (state.perfectScores > 0) {
+            const el = document.getElementById("ach-perfect");
+            if (el) { el.classList.remove("locked"); el.classList.add("unlocked"); }
+        }
+
+        if (info.level >= 5) {
+            const el = document.getElementById("ach-level5");
+            if (el) { el.classList.remove("locked"); el.classList.add("unlocked"); }
+        }
+
+        const hasAny3Stars = Object.values(state.topicStars || {}).some(s => s >= 3);
+        if (hasAny3Stars) {
+            const el = document.getElementById("ach-collector");
+            if (el) { el.classList.remove("locked"); el.classList.add("unlocked"); }
+        }
+    });
+</script>

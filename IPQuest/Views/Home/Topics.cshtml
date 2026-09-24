@@ -1,51 +1,94 @@
 @model List<IPQuest.Models.Topic>
 
 @{
-    ViewData["Title"] = "IP Topics";
+    ViewData["Title"] = "Quest World Map";
+    var realmBadges = new[] { "CREATIVE REALM", "BRAND DISTRICT", "CITADEL OF INVENTIONS", "CONFIDENTIAL VAULT" };
 }
 
 <div class="topics-page">
 
     <div class="topics-header">
-        <span class="badge">YOUR QUEST BEGINS</span>
-
-        <h1>Explore Intellectual Property</h1>
-
+        <span class="badge">RPG WORLD MAP</span>
+        <h1 class="gradient-text">Choose Your IP Quest</h1>
         <p>
-            Choose a topic and discover how ideas, inventions, brands,
-            and creative work are protected under the law.
+            Embark on interactive domain quests. Earn stars, gain XP, and unlock your IP Archmage rank!
         </p>
     </div>
 
-    <div class="topics-grid">
+    <div class="quest-map-container">
 
-        @foreach (var topic in Model)
-        {
-            <div class="topic-card">
+        <div class="map-nodes-grid">
 
-                <div class="topic-icon">
-                    @topic.Icon
+            @for (int idx = 0; idx < Model.Count; idx++)
+            {
+                var topic = Model[idx];
+                var realmName = idx < realmBadges.Length ? realmBadges[idx] : "STAGE Realm";
+
+                <div class="map-node-card topic-card" data-topic-id="@topic.Id">
+
+                    <div class="node-header">
+                        <span class="node-realm-badge">STAGE 0@(topic.Id) • @realmName</span>
+
+                        <div class="node-stars" id="stars-for-topic-@topic.Id">
+                            <span class="node-star-empty">★</span>
+                            <span class="node-star-empty">★</span>
+                            <span class="node-star-empty">★</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; align-items: flex-start;">
+                        <div class="topic-icon">
+                            @topic.Icon
+                        </div>
+
+                        <div class="topic-content">
+                            <h2>@topic.Title Realm</h2>
+
+                            <p>
+                                @topic.Description
+                            </p>
+
+                            <a asp-controller="Home"
+                               asp-action="Topic"
+                               asp-route-id="@topic.Id"
+                               class="topic-button"
+                               id="topic-card-@topic.Id">
+                                ⚔️ ENTER QUEST →
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
+            }
 
-                <div class="topic-content">
-                    <h2>@topic.Title</h2>
-
-                    <p>
-                        @topic.Description
-                    </p>
-
-                    <a asp-controller="Home"
-                       asp-action="Topic"
-                       asp-route-id="@topic.Id"
-                       class="topic-button"
-                       id="topic-card-@topic.Id">
-                        EXPLORE →
-                    </a>
-                </div>
-
-            </div>
-        }
+        </div>
 
     </div>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!window.IPQuestGame) return;
+        const state = window.IPQuestGame.getState();
+        const starsMap = state.topicStars || {};
+
+        document.querySelectorAll(".map-node-card").forEach(card => {
+            const topicId = card.dataset.topicId;
+            const starsCount = starsMap[topicId] || 0;
+            const starsContainer = document.getElementById(`stars-for-topic-${topicId}`);
+
+            if (starsContainer && starsCount > 0) {
+                let html = '';
+                for (let i = 1; i <= 3; i++) {
+                    if (i <= starsCount) {
+                        html += '<span>★</span>';
+                    } else {
+                        html += '<span class="node-star-empty">★</span>';
+                    }
+                }
+                starsContainer.innerHTML = html;
+            }
+        });
+    });
+</script>
